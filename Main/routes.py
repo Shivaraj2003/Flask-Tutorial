@@ -45,3 +45,29 @@ def login():
             return render_template('login.html')  # Re-render login page with error
 
     return render_template('login.html')  # GET request renders login page
+
+
+
+from flask import jsonify
+
+@app_routes.route('/check-unique', methods=['POST'])
+def check_unique():
+    data = request.get_json()
+    print(data)
+    username = data.get('username')
+    email = data.get('email')
+
+    response = {'username_exists': False, 'email_exists': False}
+
+    if username:
+        user = User.query.filter_by(username=username).first()
+        if user:
+            response['username_exists'] = True
+
+    if email:
+        user = User.query.filter_by(email=email).first()
+        if user:
+            response['email_exists'] = True
+
+    return jsonify(response)
+
