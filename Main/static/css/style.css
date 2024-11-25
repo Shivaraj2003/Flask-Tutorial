@@ -1,0 +1,160 @@
+/* General Reset */
+body, html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Common Styles for Background */
+body {
+   
+    background-size: cover;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Welcome Page Styles */
+.welcome-container {
+    background: rgba(0, 0, 0, 0.7); /* Semi-transparent overlay */
+    padding: 30px 50px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 500px;
+}
+
+.welcome-container h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #f9d342;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.option-button {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 1.2rem;
+    background-color: #28a745;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+}
+
+.option-button:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+}
+
+/* Form Container (Signup and Login Pages) */
+.form-container {
+    max-width: 400px;
+    width: 90%;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 25px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.form-container h2 {
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Form Elements */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+button.submit-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button.submit-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Login Page Specific Styles */
+h1 {
+    text-align: center;
+    color: #f9d342;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+    margin-bottom: 20px;
+}
+
+/* Link Styling */
+p {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 600px) {
+    .form-container {
+        padding: 15px 20px;
+    }
+
+    form {
+        gap: 12px;
+    }
+
+    button.submit-btn {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .welcome-container h1 {
+        font-size: 1.5rem;
+    }
+
+    .option-button {
+        font-size: 1rem;
+        padding: 8px 15px;
+    }
+}
