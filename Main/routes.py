@@ -3,11 +3,20 @@ from Main.models import insert_user, get_all_users, User
 from werkzeug.utils import secure_filename
 import os
 
-# Import the ML model function (placeholder for actual integration)
-from Main.ml_model import audio_to_text
+UPLOAD_FOLDER = './uploads'
+ALLOWED_EXTENSIONS = {'mp3', 'wav', 'flac'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Ensure the upload folder exists
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Import the ML model function
+from Main.ml_model import transcribe_audio
 
 app_routes = Blueprint('app_routes', __name__)
-
 
 @app_routes.route('/')
 def index():
@@ -42,69 +51,43 @@ def login():
 
         if user and user.password == password:  # Compare passwords
             # Valid credentials
-            users = get_all_users()
             return redirect(url_for('app_routes.upload_file'))
         else:
             # Invalid credentials
             flash('Invalid username or password', 'error')
             return render_template('login.html')  # Re-render login page with error
 
-    return render_template('login.html')  # GET request renders login page
-
-
-
-from flask import jsonify
-
-@app_routes.route('/check-unique', methods=['POST'])
-def check_unique():
-    data = request.get_json()
-    print(data)
-    username = data.get('username')
-    email = data.get('email')
-
-    response = {'username_exists': False, 'email_exists': False}
-
-    if username:
-        user = User.query.filter_by(username=username).first()
-        if user:
-            response['username_exists'] = True
-
-    if email:
-        user = User.query.filter_by(email=email).first()
-        if user:
-            response['email_exists'] = True
-
-    return jsonify(response)
-
-
+    return render_template('login.html')
 
 @app_routes.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        # Check if file is present in the request
         if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
+            return jsonify({"error": "No file part"}), 400
         
         file = request.files['file']
         
-        # Check if a file was selected
         if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        
-        # Save the file if it has an allowed extension
-        if file:
+            return jsonify({"error": "No selected file"}), 400
+
+        # Check if the file is allowed
+        if file and allowed_file(file.filename):
+            # Secure the filename to prevent issues with special characters
             filename = secure_filename(file.filename)
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
             
-
-            # Process the file using the ML model
-            text_output = audio_to_text(filename)
-
-            # Redirect to a page showing the result
-            return render_template('result.html', text_output=text_output)
+            # Save the file to the 'uploads' folder
+            file.save(filepath)
+            
+            # Process the file (e.g., transcribe it)
+            transcription = transcribe_audio(filepath)
+            
+            # Redirect to the result page with transcription as a URL parameter
+            # return redirect(url_for('app_routes.transcription_result', transcription=transcription))
+            return render_template('speech_to_text.html', transcription=transcription)
         else:
-            flash('File type not allowed')
-            return redirect(request.url)
+            return jsonify({"error": "Invalid file format"}), 400
 
     return render_template('upload.html')
+
+
