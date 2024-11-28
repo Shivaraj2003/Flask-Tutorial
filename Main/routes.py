@@ -1,21 +1,28 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from Main.models import insert_user, get_all_users, User
 from werkzeug.utils import secure_filename
 import os
+import requests  # To send the file to Colab via HTTP
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
+
+# Fetch the Ngrok public URL from environment variables
+NGROK_PUBLIC_URL = os.getenv('NGROK_PUBLIC_URL')  # Ensure to define this in your .env
+
+# Configure file upload settings
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'flac'}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Ensure the upload folder exists
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# Import the ML model function
-from Main.ml_model import transcribe_audio
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Blueprint for app routes
 app_routes = Blueprint('app_routes', __name__)
 
 @app_routes.route('/')
@@ -79,15 +86,44 @@ def upload_file():
             # Save the file to the 'uploads' folder
             file.save(filepath)
             
-            # Process the file (e.g., transcribe it)
-            transcription = transcribe_audio(filepath)
+            # Send the file to Colab for transcription
+            transcription = send_to_colab(filepath)
             
-            # Redirect to the result page with transcription as a URL parameter
-            # return redirect(url_for('app_routes.transcription_result', transcription=transcription))
-            return render_template('speech_to_text.html', transcription=transcription)
+            if transcription:
+                return render_template('speech_to_text.html', transcription=transcription)
+            else:
+                return jsonify({"error": "Failed to process the file on Colab"}), 500
+
         else:
             return jsonify({"error": "Invalid file format"}), 400
 
     return render_template('upload.html')
 
 
+def send_to_colab(filepath):
+    if not NGROK_PUBLIC_URL:
+        print("Error: Ngrok public URL is not set.")
+        return None
+
+    url = f"{NGROK_PUBLIC_URL}/transcribe"  # Assuming you have a /transcribe endpoint in your Colab Flask app
+
+    with open(filepath, 'rb') as audio_file:
+        files = {'file': audio_file}
+        try:
+            # Send the file to Colab for transcription
+            response = requests.post(url, files=files)
+            
+            # Check the response status code
+            if response.status_code == 200:
+                # Extract the transcription from the response
+                transcription = response.json().get('transcription', '')
+                return transcription
+            else:
+                print(f"Error: {response.status_code}, {response.text}")
+                return None
+        except requests.exceptions.RequestException as e:
+            print(f"Request Exception occurred: {e}")
+            return None
+        except Exception as e:
+            print(f"Unexpected error occurred: {e}")
+            return None
