@@ -1,3 +1,5 @@
 # Flask-App
 
-Simple Flask Application 
+## DigiMedicine
+
+### Simple Flask Application for effective handling of Electronic Health Record (EHR) 
