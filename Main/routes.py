@@ -100,6 +100,24 @@ def upload_file():
     return render_template('upload.html')
 
 
+
+@app_routes.route('/check-unique', methods=['POST'])
+def check_unique():
+    """Checks if a username or email is unique."""
+    username = request.json.get('username', None)
+    email = request.json.get('email', None)
+
+    if username:
+        user = User.query.filter_by(username=username).first()
+        if user:
+            return jsonify({"username_exists": True, "field": "username"})
+    if email:
+        user = User.query.filter_by(email=email).first()
+        if user:
+            return jsonify({"email_exists": True, "field": "email"})
+
+    return jsonify({"email_exists":False, "user_exists":True})
+                    
 def send_to_colab(filepath):
     if not NGROK_PUBLIC_URL:
         print("Error: Ngrok public URL is not set.")
