@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from Main.models import insert_user, get_all_users, User
+from Main.models import insert_user, get_all_users, User, Transcription, insert_transcription, get_all_records, Report, insert_report, get_all_reports
 from werkzeug.utils import secure_filename
 import os
 import requests  # To send the file to Colab via HTTP
@@ -45,7 +45,7 @@ def signup():
 @app_routes.route('/view_db')
 def view_db():
     users = get_all_users()
-    return render_template('success.html', users=users)
+    return render_template('users.html', users = users)
 
 @app_routes.route('/login', methods=['GET', 'POST'])
 def login():
@@ -88,9 +88,13 @@ def upload_file():
             
             # Send the file to Colab for transcription
             transcription = send_to_colab(filepath)
-            
+            # transcription = "Good job "
+            print(transcription)
             if transcription:
-                return render_template('speech_to_text.html', transcription=transcription)
+                #insert_report(filename, transcription)
+                report = transcription[0]
+                insert_report(report['Name'],report['Age'],report['Symptoms'],report['Diagnosis'], report['Treatment'],filename)
+                return render_template('speech_to_text.html', transcription=transcription[0])
             else:
                 return jsonify({"error": "Failed to process the file on Colab"}), 500
 
@@ -123,7 +127,7 @@ def send_to_colab(filepath):
         print("Error: Ngrok public URL is not set.")
         return None
 
-    url = f"{NGROK_PUBLIC_URL}/transcribe"  # Assuming you have a /transcribe endpoint in your Colab Flask app
+    url = f"{NGROK_PUBLIC_URL}/process_audio"  # Assuming you have a /transcribe endpoint in your Colab Flask app
 
     with open(filepath, 'rb') as audio_file:
         files = {'file': audio_file}
@@ -134,7 +138,8 @@ def send_to_colab(filepath):
             # Check the response status code
             if response.status_code == 200:
                 # Extract the transcription from the response
-                transcription = response.json().get('transcription', '')
+                transcription = response.json()
+                
                 return transcription
             else:
                 print(f"Error: {response.status_code}, {response.text}")
@@ -145,3 +150,9 @@ def send_to_colab(filepath):
         except Exception as e:
             print(f"Unexpected error occurred: {e}")
             return None
+
+
+@app_routes.route('/view_reports')
+def view_reports():
+    reports = get_all_reports()
+    return render_template('report.html', reports=reports)
