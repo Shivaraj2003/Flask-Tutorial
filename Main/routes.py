@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import os
 import requests  # To send the file to Colab via HTTP
 from dotenv import load_dotenv
+from Main import db
 
 # Load environment variables from .env file
 load_dotenv()
@@ -27,7 +28,7 @@ app_routes = Blueprint('app_routes', __name__)
 
 @app_routes.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('EditedHomePage.html')
 
 @app_routes.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -151,6 +152,17 @@ def send_to_colab(filepath):
             print(f"Unexpected error occurred: {e}")
             return None
 
+
+@app_routes.route('/delete_patient/<int:report_id>', methods=['POST'])
+def delete_patient(report_id):
+    patient =  Report.query.get(report_id)
+
+    if not patient:
+        return 'Page Not Found', 404
+    
+    db.session.delete(patient)
+    db.session.commit() 
+    return redirect(url_for('app_routes.view_reports'))
 
 @app_routes.route('/view_reports')
 def view_reports():

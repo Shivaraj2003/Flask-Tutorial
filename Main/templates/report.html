@@ -83,6 +83,13 @@
                     <td>{{ report.diagnosis }}</td>
                     <td>{{ report.treatment }}</td>
                     <td>{{ report.audio_file if report.audio_file else 'N/A' }}</td>
+                    <td>
+                    <form action="/delete_patient/{{report.id}}" method="post" style="display: inline;">
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete {{report.id}}?')">
+                            Delete
+                        </button>
+                    </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
