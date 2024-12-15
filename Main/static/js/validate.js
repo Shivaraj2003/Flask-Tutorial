@@ -62,3 +62,4 @@ document.getElementById('signupForm').addEventListener('submit', async function 
         alert('An error occurred. Please try again.');
     }
 });
+
